@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# this pack is valid for apps with a package.json at root
+if [ -f $1/package.json ]; then
+  echo "-----> Detected a nodejs app"
+  exit 0
+else
+  exit 1
+fi
