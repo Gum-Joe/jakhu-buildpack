@@ -1,4 +1,20 @@
 #!/bin/bash
+# Basic ref
+BUILD_DIR=$1
+CACHE_DIR=$2
+NPM_VERSION="$(npm -v)"
+# Function - check if nodejs exists
+check_node() {
+  if [ ! node -v ]; then
+    echo "-----> Nodejs not found! Please use the nodejs buildpack to install it!"
+    exit 1
+  fi
+  if [ ! npm -v ]; then
+    echo "-----> Npm not found! Please use the nodejs buildpack to install it!"
+    exit 1
+  fi
+}
+
 # Export env
 export_env_dir() {
   env_dir=$3
@@ -12,3 +28,38 @@ export_env_dir() {
     done
   fi
 }
+# Run
+export_env_dir
+# cd BUILD_DIR
+cd $BUILD_DIR
+# Check node & npm
+check_node
+# Export env
+export NODE_ENV="dev"
+export JAKHU_RUN_TYPE="local"
+# Remove tmp data
+echo "-----> Removing tmp data (logs)"
+rm -rf logs
+# Install globals
+echo "-----> Installing global dependencies using npm ${NPM_VERSION}"
+echo "       Installing grunt-cli, coffee-script, bower and sass..."
+npm install -g grunt-cli coffee-script sass bower
+echo "-----> Finished installing global dependencies using npm ${NPM_VERSION}"
+# Bower deps
+BOWER_VERSION=$(bower --version)
+echo "-----> Installing bower dependencies using bower ${BOWER_VERSION}"
+echo "       Running 'bower install'..."
+bower install
+echo "-----> Finished installing bower dependencies using bower ${BOWER_VERSION}"
+# Install build deps
+echo "-----> Installing build dependencies using npm ${NPM_VERSION}"
+echo "       Installing dev dependencies..."
+npm install --dev
+echo "-----> Finished installing dev dependencies using npm ${NPM_VERSION}"
+GRUNT_VERSION="$(grunt --version)"
+echo "-----> Building using grunt ${GRUNT_VERSION}"
+echo "       Running 'grunt sass:dist' to compile sass..."
+grunt sass:dist
+echo "-----> Done compiling sass"
+echo "-----> Done building jakhu"
+
